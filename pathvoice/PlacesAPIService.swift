@@ -19,6 +19,7 @@ struct Place: Codable, Identifiable {
     let primaryType: String?
     let types: [String]
     let location: Location
+    let photos: [PlacePhoto]?
     
     enum CodingKeys: String, CodingKey {
         case displayName
@@ -26,6 +27,7 @@ struct Place: Codable, Identifiable {
         case primaryType
         case types
         case location
+        case photos
     }
 }
 
@@ -37,6 +39,19 @@ struct DisplayName: Codable {
 struct Location: Codable {
     let latitude: Double
     let longitude: Double
+}
+
+struct PlacePhoto: Codable {
+    let name: String
+    let widthPx: Int
+    let heightPx: Int
+    let authorAttributions: [AuthorAttribution]
+}
+
+struct AuthorAttribution: Codable {
+    let displayName: String
+    let uri: String
+    let photoUri: String
 }
 
 class PlacesAPIService: ObservableObject {
@@ -75,7 +90,7 @@ class PlacesAPIService: ObservableObject {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(apiKey, forHTTPHeaderField: "X-Goog-Api-Key")
-        request.setValue("places.displayName,places.formattedAddress,places.primaryType,places.types,places.location", forHTTPHeaderField: "X-Goog-FieldMask")
+        request.setValue("places.displayName,places.formattedAddress,places.primaryType,places.types,places.location,places.photos", forHTTPHeaderField: "X-Goog-FieldMask")
         
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
@@ -108,5 +123,15 @@ class PlacesAPIService: ObservableObject {
                 }
             }
         }.resume()
+    }
+
+    func getPhotoURL(for photo: PlacePhoto, maxWidth: Int = 200) -> URL? {
+        let baseURL = "https://places.googleapis.com/v1/\(photo.name)/media"
+        var components = URLComponents(string: baseURL)
+        components?.queryItems = [
+            URLQueryItem(name: "maxWidthPx", value: "\(maxWidth)"),
+            URLQueryItem(name: "key", value: apiKey)
+        ]
+        return components?.url
     }
 } 
