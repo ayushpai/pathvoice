@@ -28,7 +28,7 @@ struct GeminiCandidate: Codable {
 }
 
 class AIManager: ObservableObject {
-    private let apiKey = "AIzaSyBfYJRVhjmUpuSlHWdElJ5ChoHpxxikRrQ" // Replace with your actual Gemini API key
+    private let apiKey = "" // Replace with your actual Gemini API key
     private let baseURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
     
     @Published var currentTourGuideText: String = ""
@@ -37,6 +37,7 @@ class AIManager: ObservableObject {
     
     private var timer: Timer?
     private var currentAttractionId: String?
+    private var speechService: SpeechService?
     
     init() {
         startPeriodicUpdates()
@@ -44,6 +45,10 @@ class AIManager: ObservableObject {
     
     deinit {
         stopPeriodicUpdates()
+    }
+    
+    func setSpeechService(_ speechService: SpeechService) {
+        self.speechService = speechService
     }
     
     func startPeriodicUpdates() {
@@ -146,6 +151,9 @@ class AIManager: ObservableObject {
                     if let firstCandidate = geminiResponse.candidates.first,
                        let firstPart = firstCandidate.content.parts.first {
                         self?.currentTourGuideText = firstPart.text
+                        
+                        // Automatically speak the tour guide text
+                        self?.speechService?.speakText(firstPart.text)
                     } else {
                         self?.errorMessage = "No content received from Gemini"
                     }

@@ -55,7 +55,7 @@ struct AuthorAttribution: Codable {
 }
 
 class PlacesAPIService: ObservableObject {
-    private let apiKey = "AIzaSyC1olvnH7yx1PghTjGQIgToOZ3Qogme-nQ"
+    private let apiKey = ""
     private let baseURL = "https://places.googleapis.com/v1/places:searchNearby"
     
     @Published var places: [Place] = []
